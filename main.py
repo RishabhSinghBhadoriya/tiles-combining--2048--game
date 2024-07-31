@@ -37,7 +37,7 @@ class Tile:
         self.y=col*Rect_height
     def get_color(self):
         #get color as per the color defined above
-        #so basically get color value as per the values like for 2 the color would the zero indexed color
+        #so basically get color value as per the values like for 2 the color would the zero indexed color and so  on
         #f(2)=0
         #f(4)=1
         color_index=int(math.log2(self.value))-1
@@ -52,7 +52,8 @@ class Tile:
     def set_pos(self):
         pass
     def move(self,delta):
-        pass   
+        self.x+=delta[0]
+        self.y+=delta[1]   
         
 def drawGrid(window):
     for row in range(1,ROWS):
@@ -62,16 +63,69 @@ def drawGrid(window):
         x=col*Rect_width
         pygame.draw.line(window,Outline_Color,(x,0),(x,HEIGHT),Outline_Thickness)
     pygame.draw.rect(window,Outline_Color,(0,0,WIDTH,HEIGHT),Outline_Thickness)
+
 def draw(window,tiles):
     window.fill(Background_Color)
     for tile in tiles.values():
         tile.draw(window)
     drawGrid(window)
     pygame.display.update()
+
+def get_random_pos(tiles):
+    row=None
+    col=None
+    while True:
+        row=random.randrange(0,ROWS)
+        col=random.randrange(0,COLS)
+        if f"{row}{col}" not in tiles:
+            break
+    return row,col
+def move_tiles(window,tiles,clock,direction):
+    updated=True
+    blocks=set()
+    if direction=="left":
+        sort=lambda x:x.col
+        reverse=False
+        delta=(-MOV_VEL,0)
+        boundary=lambda tile:tile.col==0
+        getnext=lambda tile:tiles.get(f"{tile.row}{tile.col-1}")
+        mergecheck=lambda tile,next_tile:tile.x>next_tile.x+MOV_VEL                 #to check are we in the position for merging can the tiles be merged
+        movecheck=lambda tile,next_tile:tile.x>next_tile.x+Rect_width+MOV_VEL
+
+    elif direction=="right":
+        pass
+    elif direction=="up":
+        pass
+    elif direction=="down":
+        pass
+    while updated:
+        clock.tick(FPS)
+        updated=False
+        sortedtiles=sorted(tiles.values(),key=sort,reverse=reverse)
+        for i,tile in enumerate(sortedtiles):
+            if boundary(tile):
+                continue
+            next_tile=getnext(tile)
+            if not next_tile:
+                tile.move(delta)
+            elif tile.value==next_tile.value and tile not in blocks and next_tile not in blocks:   #if the tile value are same then perform the below which is merge the tiles
+                if mergecheck(tile,next_tile):
+                    tile.move(delta)
+                else:
+                    next_tile.value*=2
+                    sortedtiles.pop(i)
+                    blocks.add(next_tile)
+def generateTiles():
+    tiles={}
+    for _ in range(2):
+        row,col=get_random_pos(tiles)
+        tiles[f"{row}{col}"]=Tile(2,row,col)
+    return tiles
+
 def main(window):
     clock=pygame.time.Clock()
     run=True
-    tiles={"00":Tile(4,0,0),"20":Tile(128,2,0),"02":Tile(64,0,2)}
+    tiles=generateTiles()
     while run:
         clock.tick(FPS)
         for event in pygame.event.get():
