@@ -49,8 +49,13 @@ class Tile:
         text=FONT.render(str(self.value),1,Font_Color)
         #to make text appear at the centre of tile
         window.blit(text,(self.x+(Rect_width/2-text.get_width()/2),self.y+(Rect_height/2-text.get_height()/2)))
-    def set_pos(self):
-        pass
+    def set_pos(self,ceil=False):
+        if ceil:
+            self.row=math.ceil(self.y/Rect_height)
+            self.col=math.ceil(self.x/Rect_width)
+        else:
+            self.row=math.floor(self.y/Rect_height)
+            self.col=math.floor(self.x/Rect_width)
     def move(self,delta):
         self.x+=delta[0]
         self.y+=delta[1]   
@@ -91,7 +96,7 @@ def move_tiles(window,tiles,clock,direction):
         getnext=lambda tile:tiles.get(f"{tile.row}{tile.col-1}")
         mergecheck=lambda tile,next_tile:tile.x>next_tile.x+MOV_VEL                 #to check are we in the position for merging can the tiles be merged
         movecheck=lambda tile,next_tile:tile.x>next_tile.x+Rect_width+MOV_VEL
-
+        ceil=True
     elif direction=="right":
         pass
     elif direction=="up":
@@ -115,6 +120,25 @@ def move_tiles(window,tiles,clock,direction):
                     next_tile.value*=2
                     sortedtiles.pop(i)
                     blocks.add(next_tile)
+            elif movecheck(tile,next_tile):
+                tile.move(delta)  #move till the end of the tile
+            else:
+                continue
+            tile.set_pos(ceil)
+            updated=True
+        update_tiles(window,tiles,sortedtiles)
+    end_move(tiles)
+def end_move(tiles):
+    if len(tiles)==16:
+        return "lost"
+    row,col=get_random_pos(tiles)
+    tiles[f"{row}{col}"]=Tile(random.choice([2,4]),row,col)
+    return "continue"
+def update_tiles(window,tiles,sortedtiles):
+    tiles.clear()
+    for tile in sortedtiles:
+        tiles[f"{tile.row}{tile.col}"]=tile
+    draw(window,tiles)
 def generateTiles():
     tiles={}
     for _ in range(2):
@@ -132,6 +156,9 @@ def main(window):
             if event.type==pygame.QUIT:
                 run=False
                 break
+            if event.type==pygame.KEYDOWN:
+                if event.key==pygame.K_LEFT:
+                    move_tiles(window,tiles,clock,"left")
         draw(window,tiles)
     pygame.quit()    
 if __name__=="__main__":
