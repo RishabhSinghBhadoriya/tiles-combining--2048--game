@@ -34,7 +34,7 @@ class Tile:
         self.row=row
         self.col=col
         self.x=col*Rect_width
-        self.y=col*Rect_height
+        self.y=row*Rect_height
     def get_color(self):
         #get color as per the color defined above
         #so basically get color value as per the values like for 2 the color would the zero indexed color and so  on
@@ -98,11 +98,32 @@ def move_tiles(window,tiles,clock,direction):
         movecheck=lambda tile,next_tile:tile.x>next_tile.x+Rect_width+MOV_VEL
         ceil=True
     elif direction=="right":
-        pass
+        sort=lambda x:x.col
+        reverse=True
+        delta=(MOV_VEL,0)
+        boundary=lambda tile:tile.col==COLS-1
+        getnext=lambda tile:tiles.get(f"{tile.row}{tile.col+1}")
+        mergecheck=lambda tile,next_tile:tile.x<next_tile.x-MOV_VEL                 #to check are we in the position for merging can the tiles be merged
+        movecheck=lambda tile,next_tile:tile.x+Rect_width+MOV_VEL<next_tile.x
+        ceil=False
     elif direction=="up":
-        pass
+        sort=lambda x:x.row
+        reverse=False
+        delta=(0,-MOV_VEL)
+        boundary=lambda tile:tile.row==0
+        getnext=lambda tile:tiles.get(f"{tile.row-1}{tile.col}")
+        mergecheck=lambda tile,next_tile:tile.y>next_tile.y+MOV_VEL                 #to check are we in the position for merging can the tiles be merged
+        movecheck=lambda tile,next_tile:tile.y>next_tile.y+Rect_height+MOV_VEL
+        ceil=True
     elif direction=="down":
-        pass
+        sort=lambda x:x.col
+        reverse=True
+        delta=(0,MOV_VEL)
+        boundary=lambda tile:tile.row==ROWS-1
+        getnext=lambda tile:tiles.get(f"{tile.row+1}{tile.col}")
+        mergecheck=lambda tile,next_tile:tile.y<next_tile.y-MOV_VEL                 #to check are we in the position for merging can the tiles be merged
+        movecheck=lambda tile,next_tile:tile.y+Rect_height+MOV_VEL<next_tile.y
+        ceil=False
     while updated:
         clock.tick(FPS)
         updated=False
@@ -127,7 +148,21 @@ def move_tiles(window,tiles,clock,direction):
             tile.set_pos(ceil)
             updated=True
         update_tiles(window,tiles,sortedtiles)
-    end_move(tiles)
+    return end_move(tiles)
+
+def check_game_over(tiles):
+    if len(tiles) < 16:
+        return False
+    for row in range(ROWS):
+        for col in range(COLS):
+            tile = tiles.get(f"{row}{col}")
+            if not tile:
+                return False
+            for drow, dcol in [(0, 1), (1, 0), (0, -1), (-1, 0)]:
+                next_tile = tiles.get(f"{row + drow}{col + dcol}")
+                if next_tile and next_tile.value == tile.value:
+                    return False
+    return True
 def end_move(tiles):
     if len(tiles)==16:
         return "lost"
@@ -159,6 +194,12 @@ def main(window):
             if event.type==pygame.KEYDOWN:
                 if event.key==pygame.K_LEFT:
                     move_tiles(window,tiles,clock,"left")
+                if event.key==pygame.K_RIGHT:
+                    move_tiles(window,tiles,clock,"right")
+                if event.key==pygame.K_UP:
+                    move_tiles(window,tiles,clock,"up")
+                if event.key==pygame.K_DOWN:
+                    move_tiles(window,tiles,clock,"down")
         draw(window,tiles)
     pygame.quit()    
 if __name__=="__main__":
