@@ -7,7 +7,7 @@
   This is a Python implementation of the popular 2048 game using the Pygame library. In this game, the objective is to combine tiles with the same number to create a tile with the number 2048. The game is played on a 4x4 grid with tiles that slide smoothly when a player moves them using the arrow keys. The game ends when no more moves are possible or when the player creates a tile with the number 2048.
 </p>
 <div align="center">
-<img src="https://github.com/user-attachments/assets/742e4242-68e3-472a-9656-0264ab5e4b0f" width=400 />
+  <img src="https://github.com/user-attachments/assets/bcdcb6d6-6577-4876-8739-cc512a4c9520" width=400/>
 </div>
 <h2>
   Features
@@ -40,4 +40,4 @@ pip install pygame
 
 ```python
 python main.py
-```![image](https://github.com/user-attachments/assets/6075d86a-db5d-40a1-95c6-bd52253ce22e)
+```
